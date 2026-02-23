@@ -4,6 +4,7 @@ GreatSCT is a tool designed to generate metasploit payloads that bypass common a
 
 GreatSCT is current under support by @ConsciousHacker
 
+I've updated it for my use specifically python3 capablitiy
 ## Software Requirements:
 
 ### Linux
