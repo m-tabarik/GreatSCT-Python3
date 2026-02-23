@@ -1,103 +1,48 @@
 #!/usr/bin/env python3
-
-import argparse
 import sys
-from lib.common import helpers
-from lib.common import messages
-from lib.common import orchestra
-sys.dont_write_bytecode = True
+import os
+import argparse
 
+# Add lib directory to path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
+
+try:
+    from lib.common import orchestra
+except ImportError as e:
+    print(f"[-] Error importing modules: {e}")
+    print("[*] Make sure you're running from the GreatSCT directory")
+    sys.exit(1)
+
+def main():
+    parser = argparse.ArgumentParser(description='GreatSCT - Application Whitelisting Bypass Generator')
+    
+    # GreatSCT Options
+    parser.add_argument('--update', action='store_true', help='Update the GreatSCT framework')
+    parser.add_argument('--version', action='store_true', help='Displays version and quits')
+    parser.add_argument('--list-tools', action='store_true', help="List GreatSCT's tools")
+    parser.add_argument('-t', '--tool', metavar='Bypass', help='Specify GreatSCT tool to use')
+    
+    # Callback Settings
+    parser.add_argument('--ip', '--domain', dest='ip', help='IP Address to connect back to')
+    parser.add_argument('--port', type=int, help='Port number to connect to')
+    
+    # Payload Settings
+    parser.add_argument('--list-payloads', action='store_true', help='Lists all available payloads for that tool')
+    parser.add_argument('--generate-awl', action='store_true', help='Generate all bypasses in the framework')
+    
+    # Great Scott Options
+    parser.add_argument('-c', nargs='+', metavar='OPTION=value', help='Custom payload module options')
+    parser.add_argument('-o', '--output', metavar='OUTPUT NAME', help='Output file base name')
+    parser.add_argument('-p', '--payload', metavar='PAYLOAD', nargs='?', const='list', help='Payload to generate. Lists payloads if none specified')
+    parser.add_argument('--clean', action='store_true', help='Clean out payload folders')
+    parser.add_argument('--msfoptions', nargs='+', metavar='OPTION=value', help='Options for the specified metasploit payload')
+    parser.add_argument('--msfvenom', metavar='windows/meterpreter/reverse_tcp', nargs='?', const='windows/meterpreter/reverse_tcp', help='Metasploit shellcode to generate')
+    
+    args = parser.parse_args()
+    
+    # Create conductor and run
+    the_conductor = orchestra.Conductor(args)
+    the_conductor.run()
 
 if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(
-        add_help=False, description="GreatSCT is a framework to generate application\
-         whitelisting bypasses.")
-    parser.add_argument(
-        '-h', '-?', '--h', '-help', '--help', action="store_true",
-        help=argparse.SUPPRESS)
-
-    greatsctframework = parser.add_argument_group('GreatSCT Options')
-    greatsctframework.add_argument(
-        '--update', action='store_true', help='Update the GreatSCT framework.')
-    greatsctframework.add_argument(
-        '--version', action="store_true", help='Displays version and quits.')
-    greatsctframework.add_argument(
-        '--list-tools', action="store_true", default=False,
-        help='List GreatSCT\'s tools')
-    greatsctframework.add_argument(
-        '-t', '--tool', metavar='Bypass', default=False,
-        help='Specify GreatSCT tool to use (Bypass)')
-
-    callback_args = parser.add_argument_group('Callback Settings')
-    callback_args.add_argument(
-        "--ip", "--domain", metavar="IP", default=None,
-        help="IP Address to connect back to")
-    callback_args.add_argument(
-        '--port', metavar="Port", default=443, type=int,
-        help="Port number to connect to.")
-    
-    payload_args = parser.add_argument_group('[*] Payload Settings')
-    payload_args.add_argument(
-        '--list-payloads', default=False, action='store_true',
-        help='Lists all available payloads for that tool')
-    payload_args.add_argument(
-        '--generate-awl', action="store_true", default=False, 
-        help="Generate all bypasses in the framework"
-    )
-
-    greatsctbypass = parser.add_argument_group('Great Scott Options')
-    greatsctbypass.add_argument(
-        '-c', metavar='OPTION1=value OPTION2=value', nargs='*',
-        default=None, help='Custom payload module options.')
-    greatsctbypass.add_argument(
-        '-o', metavar="OUTPUT NAME", default="payload",
-        help='Output file base name for source and compiled binaries.')
-    greatsctbypass.add_argument(
-        '-p', metavar="PAYLOAD", nargs='?', const="list",
-        help='Payload to generate. Lists payloads if none specified.')
-    greatsctbypass.add_argument(
-        '--clean', action='store_true',
-        help='Clean out payload folders.')
-    greatsctbypass.add_argument(
-        '--msfoptions', metavar="OPTION=value", nargs='*',
-        help='Options for the specified metasploit payload.')
-    greatsctbypass.add_argument(
-        '--msfvenom', metavar="windows/meterpreter/reverse_tcp", nargs='?',
-        default='windows/meterpreter/reverse_tcp', help='Metasploit shellcode to generate.')
-
-    args = parser.parse_args()
-
-    try:
-        the_conductor = orchestra.Conductor(args)
-    except NameError:
-        print("ERROR: You forgot to run the setup script!")
-        sys.exit()
-
-    if args.h:
-        parser.print_help()
-        sys.exit()
-
-    if args.version:
-        messages.title_screen()
-        sys.exit()
-
-    if args.update:
-        the_conductor.great_sct()
-        sys.exit()
-
-    if args.list_tools:
-        the_conductor.list_tools()
-        sys.exit()
-
-    if args.clean:
-        helpers.clean_payloads()
-        sys.exit()
-
-    if not args.tool:
-        the_conductor.main_menu()
-        sys.exit()
-
-    # This should hit if trying to use the CLI
-    else:
-        the_conductor.command_line_use()
+    main()
